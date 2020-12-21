@@ -3,52 +3,50 @@ from pytube import YouTube as yt
 from pytube import *
 from dhooks import Webhook
 import argparse
-from colorama import init, Fore
 from pytube.cli import on_progress
 from playlist import playlist_to_watch_urls
 #===============================#
 
-# init for colorama
-init(autoreset=True)
+
 # Your DISCORD WEBHOOK URL goes here
 DISCORD_API = ''
+
+# Colors
+cyan = "\033[96;1m"
+red = "\033[91;1m"
+yellow = "\033[93;1m"
+reset = "\033[0m"
 
 # Func to download videos with reference to its resolution
 def download_vid(video):
     hook = Webhook(DISCORD_API)
     if type == 'mp4':
         try:
-            if res == '1080':
-                video.streams.get_by_itag(137).download()
-            elif res == '720':
-                video.streams.get_by_itag(22).download()
-            elif res == '480':
-                video.streams.get_by_itag(135).download()
-            elif res == '360':
-                video.streams.get_by_itag(18).download()
-            elif res == '240':
-                video.streams.get_by_itag(133).download()
-            elif res == '144':
-                video.streams.get_by_itag(160).download()
-        except:
+            video.streams.filter(mime_type="video/mp4",res=res).first().download()
+        except AttributeError as e:
            # If the resolution isnt available for that particular video
-           print(Fore.RED + '[-] Invalid Resolution!')
+           print(red + f'[-] Resolution {res} not available!')
+           print(reset)
            exit(0)
 
     elif type == "mp3":
         try:
-            video.streams.get_by_itag(140).download()
+            video.streams.filter(mime_type='audio/mp3').first().download()
+        except AttributeError as e:
+            video.streams.filter(mime_type='audio/mp4').first().download()
         except:
-           print(Fore.RED + '[-] Invalid ITAG!')
-           exit(0)
+            print(red + '[-] Audio format is not supported for this link!!')
+            print(reset)
+            exit(0)
     else:
         # Incase a wrong TYPE is given
-        print(Fore.RED + '[-] Invalid type!!')
+        print(red + '[-] Invalid type!!')
+        print(reset)
         exit(0)
 
     # The following message will be sent to your discord webhook notifying you when the video has finished downloading
     hook.send(f'"{video.title}" downloaded successfully! ')
-    print(Fore.LIGHTBLACK_EX + f'[*] "{video.title}" downloaded successfully! ')
+    print(yellow + f'[*] "{video.title}" downloaded successfully! ')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -76,19 +74,27 @@ if __name__ == '__main__':
         else:
             video = yt(url, on_progress_callback=on_progress)
     except:
-        print(Fore.RED + '[-] Invalid URL!')
+        print(red + '[-] Invalid URL!')
+        print(reset)
         exit(0)
 
     type = args.type
-    res = args.res
+    if args.res is None:
+        pass
+    elif args.res[-1:] != 'p':
+        res = args.res+'p'
+    else:
+        res = args.res
+
     if isPlaylist:
         for video in playlist_videos:
-            print(Fore.CYAN + f'[+] Trying to download "{video.title}"......')
+            print(cyan + f'[+] Trying to download "{video.title}"......')
             download_vid(video)
     elif isMultiple:
         for video in multiple_videos:
-            print(Fore.CYAN + f'[+] Trying to download "{video.title}"......')
+            print(cyan + f'[+] Trying to download "{video.title}"......')
             download_vid(video)
     else:
-        print(Fore.CYAN + f'[+] Trying to download "{video.title}"......')
+        print(cyan + f'[+] Trying to download "{video.title}"......')
         download_vid(video)
+    print(reset)
