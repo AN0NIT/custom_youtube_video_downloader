@@ -1,6 +1,8 @@
+#========IMPORTS========#
 import requests
-from bs4 import BeautifulSoup as bs
 import re
+from bs4 import BeautifulSoup as bs
+#========================#
 
 def playlist_to_watch_urls(url):
     r = requests.get(url)
@@ -23,4 +25,3 @@ if __name__ == "__main__":
     videos = playlist_to_watch_urls(url)
     for video in videos:
         print("https://www.youtube.com/watch?v="+video)
-        

@@ -32,7 +32,7 @@ def download_vid(video):
                 video.streams.get_by_itag(160).download()
         except:
            # If the resolution isnt available for that particular video
-           print('Invalid Resolution!')
+           print(Fore.RED + '[-] Invalid Resolution!')
            exit(0)
 
     elif type == "mp3":
